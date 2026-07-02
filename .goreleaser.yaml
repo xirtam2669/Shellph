@@ -9,7 +9,7 @@ before:
 
 builds:
   - id: shellph
-    main: ./cmd/shellph
+    main: ./cmd/shellph/main.go
     binary: shellph
     env:
       - CGO_ENABLED=0
