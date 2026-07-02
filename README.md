@@ -319,3 +319,7 @@ Override them with:
 # License
 
 MIT License
+
+# Contact and Blog
+Email: ramessham@gmail.com
+Blog: https://vanilla-sec.com/
