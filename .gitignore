@@ -18,6 +18,7 @@ coverage.html
 
 # Generated payloads
 out.bin
+*in.bin
 *.enc
 
 # IDEs
