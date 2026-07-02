@@ -1,6 +1,6 @@
 # Binaries
-shellph
-shellph.exe
+/shellph
+/shellph.exe
 *.exe
 *.dll
 *.so
