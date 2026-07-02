@@ -1,6 +1,5 @@
 # Shellph
-
-<img src="assets/shellph_logo_git.png" alt="shellph_logo" width="400">
+<img src="assets/shellph_logo_git.png" alt="shellph_logo" width="300">
 
 > **A shellcode encryption and obfuscation toolkit written in Go-Lang.**
 
