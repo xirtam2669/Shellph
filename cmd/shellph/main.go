@@ -148,7 +148,7 @@ func validate(cfg config) error {
 	if !oneOf(cfg.outputFmt, "bin", "hex", "string", "array") {
 		return fmt.Errorf("invalid output format %q", cfg.outputFmt)
 	}
-	if !oneOf(cfg.language, "c", "go", "rust", "csharp", "powershell") {
+	if !oneOf(cfg.language, "c", "go", "rust", "csharp", "powershell") && cfg.outputFmt != "bin" {
 		return fmt.Errorf("invalid output language %q", cfg.language)
 	}
 	if oneOf(cfg.operation, "rc4", "aes", "xor") && cfg.key == "" {
