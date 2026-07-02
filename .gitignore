@@ -1,0 +1,44 @@
+# Binaries
+shellph
+shellph.exe
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Build output
+build/
+dist/
+
+# Test artifacts
+*.test
+*.out
+coverage.out
+coverage.html
+
+# Generated payloads
+out.bin
+*.enc
+
+# IDEs
+.vscode/
+.idea/
+
+# Vim
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Environment
+.env
+.env.*
+
+# Go workspace
+go.work
+go.work.sum
