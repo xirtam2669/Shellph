@@ -5,7 +5,7 @@
 *.dll
 *.so
 *.dylib
-*.c*
+
 # Build output
 build/
 dist/
@@ -13,11 +13,12 @@ dist/
 # Test artifacts
 *.test
 *.out
+*.c
+*.bin
 coverage.out
 coverage.html
 
 # Generated payloads
-*.bin
 *in.bin
 *.enc
 
