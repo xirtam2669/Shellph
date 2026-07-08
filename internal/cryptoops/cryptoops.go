@@ -1,6 +1,7 @@
 package cryptoops
 
 import (
+	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rc4"
@@ -8,6 +9,7 @@ import (
 )
 
 func RC4(key []byte, data []byte) ([]byte, error) {
+
 	if len(key) == 0 {
 		return nil, fmt.Errorf("RC4 key cannot be empty")
 	}
@@ -17,6 +19,15 @@ func RC4(key []byte, data []byte) ([]byte, error) {
 	}
 	out := make([]byte, len(data))
 	c.XORKeyStream(out, data)
+
+	rtt_test := make([]byte, len(out))
+
+	c.XORKeyStream(rtt_test, out)
+
+	if !bytes.Equal(rtt_test, data) {
+		return nil, fmt.Errorf("RC4 round-trip test failed")
+	}
+
 	return out, nil
 }
 
