@@ -98,7 +98,7 @@ func TestByteStringForEachLanguage(t *testing.T) {
 
 func TestTextStringForEachLanguage(t *testing.T) {
 	cases := map[string]string{
-		"c":          `char *encrypted[] = {\n    \"alpha\",\n    \"beta\",\n};` + "\n",
+		"c":          `char *encrypted[] = {\\n    \\\"alpha\\\",\\n    \\\"beta\\\",\\n};` + "\n",
 		"go":         `var encrypted = "alpha\nbeta\n"` + "\n",
 		"rust":       `let encrypted = "alpha\nbeta\n";` + "\n",
 		"csharp":     `string encrypted = "alpha\nbeta\n";` + "\n",
