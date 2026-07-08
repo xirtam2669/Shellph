@@ -72,7 +72,17 @@ func ByteString(data []byte, language string) (string, error) {
 func TextString(text string, language string) (string, error) {
 	switch language {
 	case "c":
-		return fmt.Sprintf("char* encrypted = %s;\n", strconv.Quote(text)), nil
+		lines := strings.Split(strings.TrimSpace(text), "\n")
+
+		var b strings.Builder
+		b.WriteString("char *encrypted[] = {\n")
+
+		for _, line := range lines {
+			b.WriteString(fmt.Sprintf("    %s,\n", strconv.Quote(strings.TrimSpace(line))))
+		}
+		b.WriteString("};\n")
+
+		return b.String(), nil
 	case "go":
 		return fmt.Sprintf("var encrypted = %s\n", strconv.Quote(text)), nil
 	case "rust":
