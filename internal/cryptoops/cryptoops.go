@@ -20,9 +20,12 @@ func RC4(key []byte, data []byte) ([]byte, error) {
 	out := make([]byte, len(data))
 	c.XORKeyStream(out, data)
 
+	c2, err := rc4.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
 	rtt_test := make([]byte, len(out))
-
-	c.XORKeyStream(rtt_test, out)
+	c2.XORKeyStream(rtt_test, out)
 
 	if !bytes.Equal(rtt_test, data) {
 		return nil, fmt.Errorf("RC4 round-trip test failed")
