@@ -100,9 +100,9 @@ func TestTextStringForEachLanguage(t *testing.T) {
 
 	cases := map[string]string{
 		"c": `char *encrypted[] = {
-		"alpha",
-		"beta",
-	};` + "\n",
+			"alpha",
+			"beta",
+		};` + "\n",
 
 		"go":         `var encrypted = "alpha\nbeta\n"` + "\n",
 		"rust":       `let encrypted = "alpha\nbeta\n";` + "\n",
