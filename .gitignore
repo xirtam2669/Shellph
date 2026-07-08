@@ -5,7 +5,7 @@
 *.dll
 *.so
 *.dylib
-
+*.c*
 # Build output
 build/
 dist/
@@ -17,7 +17,7 @@ coverage.out
 coverage.html
 
 # Generated payloads
-out.bin
+*.bin
 *in.bin
 *.enc
 
