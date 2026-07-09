@@ -275,9 +275,15 @@ $encrypted = @(
 )
 ```
 
-## Entropy Calculation
+## Additional Features
 
-Calculates Shannon entropy for a given input file
+Calculations:
+
+* Calculate entropy
+
+### `-e`
+
+Calculates Shannon entropy for a given input file.
 
 Example
 
