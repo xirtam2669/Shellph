@@ -36,6 +36,9 @@ Shellph is a portable command-line utility designed to automate encryption and o
 * C#
 * PowerShell
 
+## Additional Features
+* Calculate Entropy of a given input file
+
 ---
 
 # Installation
@@ -95,12 +98,6 @@ xor
 ipv4
 mac
 uuid
-```
-
-## Calculations
-
-```text
-entropy
 ```
 
 ---
