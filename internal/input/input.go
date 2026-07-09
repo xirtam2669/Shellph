@@ -18,7 +18,7 @@ func Load(path string, inputFormat string) ([]byte, error) {
 	}
 
 	switch inputFormat {
-	case "bin":
+	case "raw":
 		return raw, nil
 	case "hex":
 		cleaned := cleanHex(string(raw))

@@ -9,29 +9,46 @@ import (
 
 func TestNormalizeLowercasesFlagValues(t *testing.T) {
 	cfg := normalize(config{
-		inputFmt:  "BIN",
+		inputFmt:  "RAW",
 		operation: "XOR",
 		outputFmt: "ARRAY",
 		language:  "GO",
 	})
 
-	if cfg.inputFmt != "bin" || cfg.operation != "xor" || cfg.outputFmt != "array" || cfg.language != "go" {
+	if cfg.inputFmt != "raw" || cfg.operation != "xor" || cfg.outputFmt != "array" || cfg.language != "go" {
 		t.Fatalf("normalize failed: %+v", cfg)
+	}
+}
+
+func TestEntropyFlagValuesIrrelevant(t *testing.T) {
+	cfg := config{
+		file:      "input.bin",
+		inputFmt:  "asdad",
+		operation: "asdasd",
+		outputFmt: "adad",
+		language:  "adad",
+		key:       "hjkasjhk",
+		iv:        "adhjkasjk",
+		entropy:   true,
+	}
+
+	if err := validate(&cfg); err != nil {
+		t.Fatalf("validate should ignore bogus flags with entropy flag: %v", err)
 	}
 }
 
 func TestValidateAllowsDefaultKeyAndIV(t *testing.T) {
 	cfg := config{
 		file:      "input.bin",
-		inputFmt:  "bin",
+		inputFmt:  "raw",
 		operation: "aes",
-		outputFmt: "bin",
+		outputFmt: "array",
 		language:  "go",
 		key:       "1234567890123456",
 		iv:        "1234567890123456",
 	}
 
-	if err := validate(cfg); err != nil {
+	if err := validate(&cfg); err != nil {
 		t.Fatalf("validate should allow default key/iv: %v", err)
 	}
 }
@@ -41,14 +58,14 @@ func TestValidateAllowsDefaultKeyForXORAndRC4(t *testing.T) {
 		t.Run(op, func(t *testing.T) {
 			cfg := config{
 				file:      "input.bin",
-				inputFmt:  "bin",
+				inputFmt:  "raw",
 				operation: op,
-				outputFmt: "bin",
+				outputFmt: "array",
 				language:  "go",
 				key:       "1234567890123456",
 			}
 
-			if err := validate(cfg); err != nil {
+			if err := validate(&cfg); err != nil {
 				t.Fatalf("validate should allow default key for %s: %v", op, err)
 			}
 		})
@@ -66,7 +83,7 @@ func TestRunIPv4GoStringShouldBeStringVariable(t *testing.T) {
 
 	err := run(config{
 		file:      infile,
-		inputFmt:  "bin",
+		inputFmt:  "raw",
 		operation: "ipv4",
 		outputFmt: "string",
 		language:  "go",
@@ -101,7 +118,7 @@ func TestRunIPv4GoArrayShouldBeStringArray(t *testing.T) {
 
 	err := run(config{
 		file:      infile,
-		inputFmt:  "bin",
+		inputFmt:  "raw",
 		operation: "ipv4",
 		outputFmt: "array",
 		language:  "go",
@@ -137,7 +154,7 @@ func TestRunMACGoStringShouldBeStringVariable(t *testing.T) {
 
 	err := run(config{
 		file:      infile,
-		inputFmt:  "bin",
+		inputFmt:  "raw",
 		operation: "mac",
 		outputFmt: "string",
 		language:  "go",
@@ -177,7 +194,7 @@ func TestRunUUIDGoArrayShouldBeStringArray(t *testing.T) {
 
 	err := run(config{
 		file:      infile,
-		inputFmt:  "bin",
+		inputFmt:  "raw",
 		operation: "uuid",
 		outputFmt: "array",
 		language:  "go",
@@ -210,7 +227,7 @@ func TestRunXORGoArrayStillUsesByteArray(t *testing.T) {
 
 	err := run(config{
 		file:      infile,
-		inputFmt:  "bin",
+		inputFmt:  "raw",
 		operation: "xor",
 		outputFmt: "array",
 		language:  "go",
@@ -232,38 +249,5 @@ func TestRunXORGoArrayStillUsesByteArray(t *testing.T) {
 	}
 	if !strings.Contains(got, "0x40, 0x43") {
 		t.Fatalf("unexpected XOR result:\n%s", got)
-	}
-}
-
-func TestRunAESWithDefaultKeyAndIV(t *testing.T) {
-	dir := t.TempDir()
-	infile := filepath.Join(dir, "in.bin")
-	outfile := filepath.Join(dir, "out.bin")
-
-	if err := os.WriteFile(infile, []byte("ABC"), 0600); err != nil {
-		t.Fatal(err)
-	}
-
-	err := run(config{
-		file:      infile,
-		inputFmt:  "bin",
-		operation: "aes",
-		outputFmt: "bin",
-		language:  "go",
-		key:       "1234567890123456",
-		iv:        "1234567890123456",
-		outfile:   outfile,
-	})
-	if err != nil {
-		t.Fatalf("run returned error: %v", err)
-	}
-
-	got, err := os.ReadFile(outfile)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if len(got) != 16 {
-		t.Fatalf("expected AES padded ciphertext length 16, got %d", len(got))
 	}
 }

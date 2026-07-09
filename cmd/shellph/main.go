@@ -10,6 +10,8 @@ import (
 	"shellph/internal/format"
 	"shellph/internal/input"
 	"shellph/internal/transform"
+	"shellph/internal/entropy"
+
 )
 
 type config struct {
@@ -21,6 +23,7 @@ type config struct {
 	key       string
 	iv        string
 	outfile   string
+	entropy   bool
 }
 
 const (
@@ -28,8 +31,8 @@ const (
 	DefaultIV        = "1234567890123456"
 	DefaultOut       = "out.bin"
 	DefaultIn        = "in.bin"
-	DefaultInputFmt  = "bin"
-	DefaultOutputFmt = "bin"
+	DefaultInputFmt  = "raw"
+	DefaultOutputFmt = "raw"
 )
 
 func main() {
@@ -50,30 +53,32 @@ func parseFlags() config {
 		fmt.Fprintf(os.Stderr, "  shellph [options]\n\n")
 
 		fmt.Fprintf(os.Stderr, "Examples:\n")
-		fmt.Fprintf(os.Stderr, "  shellph -f shellcode.bin -fmt bin -op aes -of array -ofl c\n")
-		fmt.Fprintf(os.Stderr, "  shellph -f shellcode.bin -fmt bin -op uuid -of string -ofl powershell\n\n")
+		fmt.Fprintf(os.Stderr, "  shellph -f shellcode.bin -fmt raw -op aes -of array -ofl c\n")
+		fmt.Fprintf(os.Stderr, "  shellph -f shellcode.bin -fmt raw -op uuid -of string -ofl powershell\n\n")
+		fmt.Fprintf(os.Stderr, "  shellph -e -f program.exe\n")
 
 		fmt.Fprintf(os.Stderr, "Options:\n\n")
 
 		fmt.Fprintf(os.Stderr, "  -f,   --file <file>                 Input file\n")
-		fmt.Fprintf(os.Stderr, "  -fmt, --input-format <bin|hex>      Input format\n")
+		fmt.Fprintf(os.Stderr, "  -fmt, --input-format <raw|hex>      Input format\n")
 		fmt.Fprintf(os.Stderr, "  -op,  --operation <operation>       aes | rc4 | xor | ipv4 | mac | uuid\n")
-		fmt.Fprintf(os.Stderr, "  -of,  --output-format <format>      bin | hex | string | array\n")
+		fmt.Fprintf(os.Stderr, "  -of,  --output-format <format>      raw | hex | string | array\n")
 		fmt.Fprintf(os.Stderr, "  -ofl, --output-format-language      c | go | rust | csharp | powershell\n")
 		fmt.Fprintf(os.Stderr, "  -k,   --key <key>                   Encryption key (default: 1234567890123456)\n")
 		fmt.Fprintf(os.Stderr, "  -iv,  --iv <iv>                     AES IV (default: 1234567890123456)\n")
 		fmt.Fprintf(os.Stderr, "  -o,   --outfile <file>              Output file (default: out.bin)\n")
-
+		fmt.Fprintf(os.Stderr, "  -e,   --entropy                     Calculate entropy of input file\n")
 		fmt.Fprintf(os.Stderr, "\n")
 	}
+
 	flag.StringVar(&cfg.file, "file", DefaultIn, "Input file path")
 	flag.StringVar(&cfg.file, "f", DefaultIn, "Input file path")
-	flag.StringVar(&cfg.inputFmt, "input-format", DefaultInputFmt, "Input format: hex or bin")
-	flag.StringVar(&cfg.inputFmt, "fmt", DefaultInputFmt, "Input format: hex or bin")
+	flag.StringVar(&cfg.inputFmt, "input-format", DefaultInputFmt, "Input format: hex or raw")
+	flag.StringVar(&cfg.inputFmt, "fmt", DefaultInputFmt, "Input format: hex or raw")
 	flag.StringVar(&cfg.operation, "operation", "", "Operation: rc4, aes, xor, ipv4, mac, uuid")
 	flag.StringVar(&cfg.operation, "op", "", "Operation: rc4, aes, xor, ipv4, mac, uuid")
-	flag.StringVar(&cfg.outputFmt, "output-format", DefaultOutputFmt, "Output format: bin, hex, string, array")
-	flag.StringVar(&cfg.outputFmt, "of", DefaultOutputFmt, "Output format: bin, hex, string, array")
+	flag.StringVar(&cfg.outputFmt, "output-format", DefaultOutputFmt, "Output format: raw, hex, string, array")
+	flag.StringVar(&cfg.outputFmt, "of", DefaultOutputFmt, "Output format: raw, hex, string, array")
 	flag.StringVar(&cfg.language, "output-format-language", "", "Language: c, go, rust, csharp, powershell")
 	flag.StringVar(&cfg.language, "ofl", "", "Language: c, go, rust, csharp, powershell")
 	flag.StringVar(&cfg.key, "key", DefaultKey, "Key for rc4, aes, xor")
@@ -81,6 +86,8 @@ func parseFlags() config {
 	flag.StringVar(&cfg.iv, "iv", DefaultIV, "AES IV, exactly 16 bytes")
 	flag.StringVar(&cfg.outfile, "outfile", DefaultOut, "Output file path")
 	flag.StringVar(&cfg.outfile, "o", DefaultOut, "Output file path")
+	flag.BoolVar(&cfg.entropy, "e", false, "Calculate entropy of input file")
+	flag.BoolVar(&cfg.entropy, "entropy", false, "Calculate entropy of input file")
 
 	flag.Parse()
 
@@ -102,7 +109,7 @@ func normalize(cfg config) config {
 }
 
 func run(cfg config) error {
-	if err := validate(cfg); err != nil {
+	if err := validate(&cfg); err != nil {
 		return err
 	}
 
@@ -110,6 +117,17 @@ func run(cfg config) error {
 	data, err := input.Load(cfg.file, cfg.inputFmt)
 	if err != nil {
 		return fmt.Errorf("failed during input file loading: %w", err)
+	}
+
+	if cfg.entropy {
+		entropyValue := entropy.CalculateEntropy(data)
+		fmt.Printf("[+] Entropy of %s: %.4f\n", cfg.file, entropyValue)
+		if entropyValue > 7.5 {
+			fmt.Println("[!] High entropy detected, likely encrypted or compressed data.")
+		} else {
+			fmt.Println("[+] Low entropy detected, likely unencrypted data.")
+		}
+		return nil
 	}
 
 	result, err := applyOperation(cfg, data)
@@ -135,20 +153,28 @@ func run(cfg config) error {
 	return nil
 }
 
-func validate(cfg config) error {
+func validate(cfg *config) error {
 	if cfg.file == "" {
 		return fmt.Errorf("missing required -f/--file")
 	}
-	if !oneOf(cfg.inputFmt, "hex", "bin") {
-		return fmt.Errorf("invalid input format %q; use hex or bin", cfg.inputFmt)
+	if cfg.entropy && cfg.inputFmt != "raw" {
+		fmt.Println("[!] Warning: Entropy calculation is only valid for raw input format. Ignoring input format.")
+		cfg.inputFmt = "raw"
+		return nil
+	}
+	if cfg.entropy {
+		return nil
+	}
+	if !oneOf(cfg.inputFmt, "hex", "raw") {
+		return fmt.Errorf("invalid input format %q; use hex or raw", cfg.inputFmt)
 	}
 	if !oneOf(cfg.operation, "rc4", "aes", "xor", "ipv4", "mac", "uuid") {
 		return fmt.Errorf("invalid operation %q", cfg.operation)
 	}
-	if !oneOf(cfg.outputFmt, "bin", "hex", "string", "array") {
+	if !oneOf(cfg.outputFmt, "raw", "hex", "string", "array") {
 		return fmt.Errorf("invalid output format %q", cfg.outputFmt)
 	}
-	if !oneOf(cfg.language, "c", "go", "rust", "csharp", "powershell") && cfg.outputFmt != "bin" {
+	if !oneOf(cfg.language, "c", "go", "rust", "csharp", "powershell") && cfg.outputFmt != "raw" {
 		return fmt.Errorf("invalid output language %q", cfg.language)
 	}
 	if oneOf(cfg.operation, "rc4", "aes", "xor") && cfg.key == "" {
@@ -157,8 +183,11 @@ func validate(cfg config) error {
 	if cfg.operation == "aes" && cfg.iv == "" {
 		return fmt.Errorf("-iv/--iv is required for aes")
 	}
-	if cfg.outputFmt == "bin" && oneOf(cfg.operation, "ipv4", "mac", "uuid") {
+	if cfg.outputFmt == "raw" && oneOf(cfg.operation, "ipv4", "mac", "uuid") {
 		return fmt.Errorf("%s transform requires text output: use -of string or -of array", cfg.operation)
+	}
+	if cfg.outputFmt == "raw" && oneOf(cfg.language, "c", "go", "rust", "csharp", "powershell") {
+		return fmt.Errorf("raw output format cannot be used with -ofl/--output-format-language flag")
 	}
 	return nil
 }

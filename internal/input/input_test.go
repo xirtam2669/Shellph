@@ -16,7 +16,7 @@ func TestLoadBin(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	got, err := Load(path, "bin")
+	got, err := Load(path, "raw")
 	if err != nil {
 		t.Fatalf("Load returned error: %v", err)
 	}

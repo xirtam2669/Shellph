@@ -75,6 +75,7 @@ shellph [options]
 | `-k`   | `--key`                    | Encryption key                            |
 | `-iv`  | `--iv`                     | AES initialization vector                 |
 | `-o`   | `--outfile`                | Output filename                           |
+| `-e`   | `--entropy`                | Calculate entropy of input file           |
 
 ---
 
@@ -94,6 +95,12 @@ xor
 ipv4
 mac
 uuid
+```
+
+## Calculations
+
+```text
+entropy
 ```
 
 ---
@@ -269,6 +276,22 @@ $encrypted = @(
     "77.90.65.82",
     "85.72.137.229",
 )
+```
+
+## Entropy Calculation
+
+Calculates Shannon entropy for a given input file
+
+Example
+
+```sh
+shellph \
+    -e \
+    -f program.exe
+
+[+] Loading input from disk...
+[+] Entropy of popup_test.bin: 5.9807
+[+] Low entropy detected, likely unencrypted data.
 ```
 
 ---
