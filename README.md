@@ -71,9 +71,9 @@ shellph [options]
 | Short  | Long                       | Description                               |
 | ------ | -------------------------- | ----------------------------------------- |
 | `-f`   | `--file`                   | Input file                                |
-| `-fmt` | `--input-format`           | `bin` or `hex`                            |
+| `-fmt` | `--input-format`           | `raw` or `hex`                            |
 | `-op`  | `--operation`              | Encryption or transformation operation    |
-| `-of`  | `--output-format`          | `bin`, `hex`, `string`, or `array`        |
+| `-of`  | `--output-format`          | `raw`, `hex`, `string`, or `array`        |
 | `-ofl` | `--output-format-language` | `c`, `go`, `rust`, `csharp`, `powershell` |
 | `-k`   | `--key`                    | Encryption key                            |
 | `-iv`  | `--iv`                     | AES initialization vector                 |
@@ -109,7 +109,7 @@ uuid
 ```bash
 shellph \
     -f shellcode.bin \
-    -fmt bin \
+    -fmt raw \
     -op aes \
     -of array \
     -ofl c
@@ -122,7 +122,7 @@ shellph \
 ```bash
 shellph \
     -f shellcode.bin \
-    -fmt bin \
+    -fmt raw \
     -op rc4 \
     -of string \
     -ofl go
@@ -135,7 +135,7 @@ shellph \
 ```bash
 shellph \
     -f shellcode.bin \
-    -fmt bin \
+    -fmt raw \
     -op xor \
     -of array \
     -ofl rust
@@ -148,7 +148,7 @@ shellph \
 ```bash
 shellph \
     -f shellcode.bin \
-    -fmt bin \
+    -fmt raw \
     -op ipv4 \
     -of array \
     -ofl powershell
@@ -171,7 +171,7 @@ $encrypted = @(
 ```bash
 shellph \
     -f shellcode.bin \
-    -fmt bin \
+    -fmt raw \
     -op uuid \
     -of string \
     -ofl go
